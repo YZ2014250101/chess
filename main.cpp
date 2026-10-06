@@ -1,6 +1,7 @@
-﻿#include <graphics.h>
+﻿#define WIN32_LEAN_AND_MEAN
+#pragma comment(lib, "ws2_32.lib")
+#include <graphics.h>
 #include "Game.h"
-
 int main()
 {   
     initgraph(Board::WIN_W, Board::WIN_H);

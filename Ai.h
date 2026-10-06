@@ -73,5 +73,6 @@ private:
         }
         int center = Board::SIZE / 2;
         score += (center - abs(r - center)) + (center - abs(c - center));
+        return score;
     }
 };

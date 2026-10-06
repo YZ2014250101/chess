@@ -133,6 +133,14 @@ public:
             line(MARGIN, MARGIN + i * CELL, MARGIN + BOARD_PX, MARGIN + i * CELL);
             line(MARGIN + i * CELL, MARGIN, MARGIN + i * CELL, MARGIN + BOARD_PX);
         }
+        const int stars[5][2] = { {3, 3}, {11, 3}, {7, 7}, {3, 11}, {11, 11} };
+        setfillcolor(EGERGB(139, 90, 43));     // setfillcolor：设置当前填充颜色
+        for (int i = 0; i < 5; ++i)         // 遍历五个星位
+        {
+            int x, y;                                       // 准备接收像素坐标
+            rcToXY(stars[i][0], stars[i][1], x, y);         // 行列坐标换算成像素坐标
+            fillellipse(x, y, 4, 4);        // fillellipse：画一个实心椭圆（圆心, 横向半径, 纵向半径）
+        }
     }
     void setLastMove(int r, int c) {
         lastMoveR = r;

@@ -32,5 +32,8 @@
     <ClInclude Include="Ai.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Network.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
