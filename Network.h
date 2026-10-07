@@ -3,6 +3,7 @@
 #include <winsock2.h> 
 #include <ws2tcpip.h>
 #include <cstring>
+#include <iostream>
 enum NetEvent {
     NET_NONE, // 没有新消息到达
     NET_STEP, // 收到对方落子（配合 r、c 两个参数使用）

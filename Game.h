@@ -33,6 +33,10 @@ public:
                 pollNetwork(); 
                 drawNetScene();
             }
+            if (isGameOver&&scene!=Scene::MENU) {
+                board.drawWin(temp);
+                drawWinInfo();
+            }
             delay_fps(60);
         }
 
@@ -51,7 +55,7 @@ private:
     int steps;
     int curPlayer;
     std::vector<Move> history;
-
+    std::vector<Move> temp; // 用于存储获胜的五子位置
     Network net;
     bool is_netMod;
     bool is_ready   ;
@@ -87,16 +91,18 @@ private:
             if (ev == NET_STEP) {
                 if (!isGameOver && curPlayer != myturn) {
                     makeMove(r, c);
-                } else if (ev == NET_RESTART){
-                    startNetGame(); // 双方同步重置
-                } else if (ev == NET_QUIT || ev == NET_DISCONNECT){
-                    // 回主菜单，连接资源由 close() 释放
-                    net.close();
-                    is_ready = false;
-                    is_netMod = false;
-                    scene = Scene::MENU;
-                    return;
-                }
+                } 
+            } else if (ev == NET_RESTART) {
+                wcscpy(netMsg, L"收到对方重新开始请求");
+                startNetGame(); // 双方同步重置
+            } else if (ev == NET_QUIT || ev == NET_DISCONNECT) {
+                // 回主菜单，连接资源由 close() 释放
+                wcscpy(netMsg, L"对方已退出游戏");
+                net.close();
+                is_ready = false;
+                is_netMod = false;
+                scene = Scene::MENU;
+                return;
             }
         }
         
@@ -124,7 +130,7 @@ private:
         while (kbhit()) {
             int key = getch();
             if (key == 27) {
-                //net.sendQuit();
+                net.sendQuit();
                 //net.closeConnection();
                 is_netMod = false;
                 is_ready = false;
@@ -162,6 +168,15 @@ private:
         }
         board.draw(); 
         drawInfoPanel();
+        if (netTimer > 0) {
+            setfont(20, 0, L"微软雅黑");
+            settextcolor(EGERGB(255, 0, 0));
+            outtextxy(300, 500, netMsg);
+            netTimer--;
+            if (netTimer == 0) {
+                netMsg[0] = '\0';
+            }
+        }
     }
     void drawNetWait() {
         setbkcolor(EGERGB(205, 170, 115));
@@ -307,7 +322,7 @@ private:
         setfont(28, 0, L"微软雅黑");
         outtextxy(300, 320, L"1. 双人对战");
         outtextxy(300, 380, L"2. 人机模式（玩家执黑先手）");
-        outtextxy(300, 440, L"3. 局域网联机对战");
+        //outtextxy(300, 440, L"3. 局域网联机对战");
         outtextxy(300, 500, L"ESC. 退出程序");
 
         setfont(18, 0, L"微软雅黑");
@@ -316,6 +331,21 @@ private:
     }
     void drawScene(){
         board.draw();
+    }
+    void drawWinInfo()
+    {
+        setbkmode(TRANSPARENT);
+        settextcolor(EGERGB(80, 55, 35));
+        setfont(50, 0, L"微软雅黑");
+        int x = Board::PANEL_X;
+        int y = 500;
+        outtextxy(x + 20, y, L"游戏结束！");
+        y += 40;
+        if (winner == Piece::Black) {
+            outtextxy(x + 20, y, L"黑棋获胜！");
+        } else if (winner == Piece::White) {
+            outtextxy(x + 20, y, L"白棋获胜！");
+        }
     }
     void drawInfoPanel()
     {
@@ -384,6 +414,7 @@ private:
         scene = Scene::PLAYING;
         winner = Piece::Empty;
         history.clear();
+        temp.clear();
         winner = Piece::Empty;
         curPlayer = 1;
         lastMoveUndone = false;
@@ -427,7 +458,6 @@ private:
         int dir[4][2] = { { 0, 1 }, { 1, 0 }, { 1, 1 }, { 1, -1 } };
         for (int i = 0; i < 4; i++) {
             int cnt = 1;
-            std::vector<Move> temp;
             temp.push_back({ r, c, p });
             for (int j = 0;; j++) {
                 int nr = r + dir[i][0] * (j + 1);
@@ -452,13 +482,12 @@ private:
             if (cnt >= 5) {
                 drawScene();
                 drawInfoPanel();
-                board.drawWin(temp);
                 winner = p;
                 isGameOver = true;
-                getch();
                 return true;
             }
         }
+        temp.clear();
         return false;
     }
 };
